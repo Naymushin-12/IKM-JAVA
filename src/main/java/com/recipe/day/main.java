@@ -26,7 +26,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @version 1.0
  */
 @SpringBootApplication
-public class Main {
+public class main {
 
     /**
      * Точка входа в приложение.
@@ -34,7 +34,7 @@ public class Main {
      * @param args аргументы командной строки
      */
     public static void main(String[] args) {
-        SpringApplication.run(Main.class, args);
+        SpringApplication.run(main.class, args);
     }
 
 }
