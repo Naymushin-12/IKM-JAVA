@@ -4,298 +4,170 @@
     <meta charset="UTF-8">
     <title th:text="${recipe.id != null} ? 'Редактировать рецепт' : 'Добавить рецепт'"></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .form-section {
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .form-section h5 {
-            border-bottom: 2px solid #0d6efd;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        .star-rating {
-            font-size: 24px;
-            color: #ffc107;
-            cursor: pointer;
-        }
-        .star-rating .star {
-            margin-right: 5px;
-        }
-        .star-rating .star:hover {
-            color: #fd7e14;
-        }
-    </style>
 </head>
 <body>
 <div class="container mt-4">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-utensils me-2"></i>Случайный рецепт дня
-            </a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="/">Главная</a>
-                <a class="nav-link active" href="/recipes">Рецепты</a>
-                <a class="nav-link" href="/categories">Категории</a>
-                <a class="nav-link" href="/favorites">Избранное</a>
-            </div>
-        </div>
+    <nav class="navbar navbar-light bg-light mb-4">
+        <a class="navbar-brand" href="/">🍽️ Рецепт дня</a>
+        <a href="/recipes" class="btn btn-secondary">Назад к списку</a>
     </nav>
 
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header" th:classappend="${recipe.id != null} ? 'bg-warning' : 'bg-primary'">
-                    <h4 class="card-title text-white">
-                        <i class="fas" th:classappend="${recipe.id != null} ? 'fa-edit' : 'fa-plus'"></i>
-                        <span th:text="${recipe.id != null} ? 'Редактировать рецепт' : 'Добавить рецепт'"></span>
-                    </h4>
+    <div class="card">
+        <div class="card-header" th:classappend="${recipe.id != null} ? 'bg-warning' : 'bg-primary'">
+            <h4 class="card-title text-white">
+                <span th:text="${recipe.id != null} ? 'Редактировать рецепт' : 'Добавить новый рецепт'"></span>
+            </h4>
+        </div>
+        
+        <div class="card-body">
+            <!-- Измените action на "/recipes/save" -->
+            <form th:action="@{/recipes/save}" th:object="${recipe}" method="post">
+                <input type="hidden" th:field="*{id}">
+                
+                <!-- Название -->
+                <div class="mb-3">
+                    <label class="form-label">Название рецепта *</label>
+                    <input type="text" class="form-control" th:field="*{title}" 
+                           th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''"
+                           required>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}">
+                        <span th:errors="*{title}"></span>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form th:action="@{/recipes/save}" th:object="${recipe}" method="post">
-                        <input type="hidden" th:field="*{id}">
-                        <input type="hidden" th:field="*{createdDate}">
-                        <input type="hidden" th:field="*{modifiedDate}">
-                        
-                        <!-- Основная информация -->
-                        <div class="form-section">
-                            <h5><i class="fas fa-info-circle me-2"></i>Основная информация</h5>
-                            
-                            <div class="mb-3">
-                                <label for="title" class="form-label">
-                                    <i class="fas fa-heading me-1"></i>Название рецепта *
-                                </label>
-                                <input type="text" class="form-control" id="title" 
-                                       th:field="*{title}" 
-                                       th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''"
-                                       placeholder="Введите название рецепта" required>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}">
-                                    <span th:errors="*{title}"></span>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="description" class="form-label">
-                                    <i class="fas fa-align-left me-1"></i>Краткое описание
-                                </label>
-                                <textarea class="form-control" id="description" 
-                                         th:field="*{description}" 
-                                         th:classappend="${#fields.hasErrors('description')} ? 'is-invalid' : ''"
-                                         rows="3" placeholder="Краткое описание рецепта (необязательно)"></textarea>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}">
-                                    <span th:errors="*{description}"></span>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="category" class="form-label">
-                                            <i class="fas fa-tags me-1"></i>Категория *
-                                        </label>
-                                        <select class="form-control" id="category" 
-                                                th:field="*{category}" 
-                                                th:classappend="${#fields.hasErrors('category')} ? 'is-invalid' : ''" required>
-                                            <option value="">Выберите категорию</option>
-                                            <option th:each="cat : ${categories}" 
-                                                    th:value="${cat.id}"
-                                                    th:text="${cat.title}"
-                                                    th:selected="${recipe.category != null && recipe.category.id == cat.id}">
-                                            </option>
-                                        </select>
-                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}">
-                                            <span th:errors="*{category}"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="servings" class="form-label">
-                                            <i class="fas fa-user-friends me-1"></i>Количество порций *
-                                        </label>
-                                        <input type="number" class="form-control" id="servings" 
-                                               th:field="*{servings}" 
-                                               th:classappend="${#fields.hasErrors('servings')} ? 'is-invalid' : ''"
-                                               min="1" max="20" value="4" required>
-                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('servings')}">
-                                            <span th:errors="*{servings}"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Время и сложность -->
-                        <div class="form-section">
-                            <h5><i class="fas fa-clock me-2"></i>Время и сложность</h5>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="preparationTime" class="form-label">
-                                            <i class="fas fa-hourglass-half me-1"></i>Время приготовления (минуты) *
-                                        </label>
-                                        <input type="number" class="form-control" id="preparationTime" 
-                                               th:field="*{preparationTime}" 
-                                               th:classappend="${#fields.hasErrors('preparationTime')} ? 'is-invalid' : ''"
-                                               min="5" max="1440" value="30" required>
-                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('preparationTime')}">
-                                            <span th:errors="*{preparationTime}"></span>
-                                        </div>
-                                        <div class="form-text">
-                                            Минимум 5 минут, максимум 24 часа (1440 минут)
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-fire me-1"></i>Сложность *
-                                        </label>
-                                        <div>
-                                            <div class="btn-group" role="group" aria-label="Сложность">
-                                                <input type="radio" class="btn-check" name="difficulty" 
-                                                       th:field="*{difficulty}" id="difficulty1" value="1" autocomplete="off">
-                                                <label class="btn btn-outline-warning" for="difficulty1">1 ★☆☆☆☆</label>
-                                                
-                                                <input type="radio" class="btn-check" name="difficulty" 
-                                                       th:field="*{difficulty}" id="difficulty2" value="2" autocomplete="off">
-                                                <label class="btn btn-outline-warning" for="difficulty2">2 ★★☆☆☆</label>
-                                                
-                                                <input type="radio" class="btn-check" name="difficulty" 
-                                                       th:field="*{difficulty}" id="difficulty3" value="3" autocomplete="off" checked>
-                                                <label class="btn btn-outline-warning" for="difficulty3">3 ★★★☆☆</label>
-                                                
-                                                <input type="radio" class="btn-check" name="difficulty" 
-                                                       th:field="*{difficulty}" id="difficulty4" value="4" autocomplete="off">
-                                                <label class="btn btn-outline-warning" for="difficulty4">4 ★★★★☆</label>
-                                                
-                                                <input type="radio" class="btn-check" name="difficulty" 
-                                                       th:field="*{difficulty}" id="difficulty5" value="5" autocomplete="off">
-                                                <label class="btn btn-outline-warning" for="difficulty5">5 ★★★★★</label>
-                                            </div>
-                                        </div>
-                                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('difficulty')}">
-                                            <span th:errors="*{difficulty}"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="rating" class="form-label">
-                                    <i class="fas fa-star me-1"></i>Рейтинг (0.0 - 5.0)
-                                </label>
-                                <input type="number" class="form-control" id="rating" 
-                                       th:field="*{rating}" 
-                                       th:classappend="${#fields.hasErrors('rating')} ? 'is-invalid' : ''"
-                                       step="0.1" min="0" max="5" placeholder="4.5">
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('rating')}">
-                                    <span th:errors="*{rating}"></span>
-                                </div>
-                                <div class="form-text">
-                                    Оценка рецепта по 5-балльной шкале (необязательно)
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Ингредиенты -->
-                        <div class="form-section">
-                            <h5><i class="fas fa-shopping-basket me-2"></i>Ингредиенты</h5>
-                            
-                            <div class="mb-3">
-                                <label for="ingredients" class="form-label">
-                                    <i class="fas fa-list me-1"></i>Список ингредиентов *
-                                </label>
-                                <textarea class="form-control" id="ingredients" 
-                                         th:field="*{ingredients}" 
-                                         th:classappend="${#fields.hasErrors('ingredients')} ? 'is-invalid' : ''"
-                                         rows="6" placeholder="Введите ингредиенты, каждый с новой строки или через запятую" required></textarea>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('ingredients')}">
-                                    <span th:errors="*{ingredients}"></span>
-                                </div>
-                                <div class="form-text">
-                                    Каждый ингредиент с новой строки. Пример:<br>
-                                    Мука - 200 г<br>
-                                    Яйца - 2 шт.<br>
-                                    Молоко - 500 мл
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Инструкции -->
-                        <div class="form-section">
-                            <h5><i class="fas fa-list-ol me-2"></i>Инструкции по приготовлению</h5>
-                            
-                            <div class="mb-3">
-                                <label for="instructions" class="form-label">
-                                    <i class="fas fa-book-open me-1"></i>Пошаговая инструкция *
-                                </label>
-                                <textarea class="form-control" id="instructions" 
-                                         th:field="*{instructions}" 
-                                         th:classappend="${#fields.hasErrors('instructions')} ? 'is-invalid' : ''"
-                                         rows="8" placeholder="Подробная инструкция по приготовлению блюда" required></textarea>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('instructions')}">
-                                    <span th:errors="*{instructions}"></span>
-                                </div>
-                                <div class="form-text">
-                                    Опишите каждый шаг приготовления подробно. Пример:<br>
-                                    1. Просеять муку и смешать с солью.<br>
-                                    2. Добавить яйца и молоко, тщательно перемешать.<br>
-                                    3. Жарить на разогретой сковороде до золотистой корочки.
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Кнопки -->
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="/recipes" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left me-1"></i>Назад к списку
-                            </a>
-                            <div>
-                                <button type="reset" class="btn btn-outline-danger me-2">
-                                    <i class="fas fa-undo me-1"></i>Сбросить
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-1"></i>Сохранить рецепт
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                
+                <!-- Описание -->
+                <div class="mb-3">
+                    <label class="form-label">Описание</label>
+                    <textarea class="form-control" th:field="*{description}" rows="2"></textarea>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}">
+                        <span th:errors="*{description}"></span>
+                    </div>
                 </div>
-            </div>
+                
+                <div class="row">
+                    <!-- Категория -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Категория *</label>
+                        <select class="form-control" th:field="*{category}" required
+                                th:classappend="${#fields.hasErrors('category')} ? 'is-invalid' : ''">
+                            <option value="">Выберите категорию</option>
+                            <option th:each="cat : ${categories}" 
+                                    th:value="${cat.id}"
+                                    th:text="${cat.title}"
+                                    th:selected="${recipe.category != null and recipe.category.id == cat.id}">
+                            </option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}">
+                            <span th:errors="*{category}"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Время приготовления -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Время (минуты) *</label>
+                        <input type="number" class="form-control" th:field="*{preparationTime}" 
+                               min="5" max="1440" required
+                               th:classappend="${#fields.hasErrors('preparationTime')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('preparationTime')}">
+                            <span th:errors="*{preparationTime}"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Количество порций -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Порций *</label>
+                        <input type="number" class="form-control" th:field="*{servings}" 
+                               min="1" max="20" required
+                               th:classappend="${#fields.hasErrors('servings')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('servings')}">
+                            <span th:errors="*{servings}"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <!-- Сложность -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Сложность (1-5) *</label>
+                        <input type="number" class="form-control" th:field="*{difficulty}" 
+                               min="1" max="5" required
+                               th:classappend="${#fields.hasErrors('difficulty')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('difficulty')}">
+                            <span th:errors="*{difficulty}"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Рейтинг -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Рейтинг (0.0-5.0)</label>
+                        <input type="number" class="form-control" th:field="*{rating}" 
+                               step="0.1" min="0" max="5"
+                               th:classappend="${#fields.hasErrors('rating')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('rating')}">
+                            <span th:errors="*{rating}"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ингредиенты -->
+                <div class="mb-3">
+                    <label class="form-label">Ингредиенты *</label>
+                    <textarea class="form-control" th:field="*{ingredients}" 
+                              rows="4" 
+                              placeholder="Введите ингредиенты, каждый с новой строки" 
+                              required
+                              th:classappend="${#fields.hasErrors('ingredients')} ? 'is-invalid' : ''"></textarea>
+                    <small class="text-muted">Каждый ингредиент с новой строки</small>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('ingredients')}">
+                        <span th:errors="*{ingredients}"></span>
+                    </div>
+                </div>
+                
+                <!-- Инструкции -->
+                <div class="mb-3">
+                    <label class="form-label">Инструкции приготовления *</label>
+                    <textarea class="form-control" th:field="*{instructions}" 
+                              rows="6" 
+                              placeholder="Подробно опишите шаги приготовления" 
+                              required
+                              th:classappend="${#fields.hasErrors('instructions')} ? 'is-invalid' : ''"></textarea>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('instructions')}">
+                        <span th:errors="*{instructions}"></span>
+                    </div>
+                </div>
+                
+                <!-- Сообщения об ошибках -->
+                <div th:if="${#fields.hasErrors('*')}">
+                    <div class="alert alert-danger">
+                        <h6>Исправьте следующие ошибки:</h6>
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Кнопки -->
+                <div class="d-flex justify-content-between">
+                    <a href="/recipes" class="btn btn-secondary">Отмена</a>
+                    <button type="submit" class="btn btn-primary">
+                        <span th:text="${recipe.id != null} ? 'Сохранить изменения' : 'Добавить рецепт'"></span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Скрипт для правильной привязки категории -->
 <script>
-    // Автоматический расчет времени в читаемом формате
-    document.getElementById('preparationTime').addEventListener('input', function() {
-        const minutes = parseInt(this.value) || 0;
-        const hours = Math.floor(minutes / 60);
-        const remainingMinutes = minutes % 60;
-        
-        let timeText = '';
-        if (hours > 0) {
-            timeText = hours + ' ч ';
-        }
-        if (remainingMinutes > 0 || hours === 0) {
-            timeText += remainingMinutes + ' мин';
-        }
-        
-        // Обновляем подпись
-        const timeLabel = document.querySelector('label[for="preparationTime"]');
-        const originalText = timeLabel.textContent.replace(/\(.*\)/, '');
-        timeLabel.textContent = originalText + ' (' + timeText.trim() + ')';
-    });
-    
-    // Инициализация при загрузке
-    document.getElementById('preparationTime').dispatchEvent(new Event('input'));
+document.addEventListener('DOMContentLoaded', function() {
+    // Проверяем, есть ли выбранная категория
+    var categorySelect = document.querySelector('select[th\\:field="*{category}"]');
+    if (categorySelect) {
+        // Thymeleaf уже должен установить selected option через th:selected
+        console.log('Category select initialized');
+    }
+});
 </script>
 </body>
 </html>
