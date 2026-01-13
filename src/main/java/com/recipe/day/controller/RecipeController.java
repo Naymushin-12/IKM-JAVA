@@ -1,6 +1,5 @@
 package com.recipe.day.controller;
 
-import com.recipe.day.entity.Category;
 import com.recipe.day.entity.Recipe;
 import com.recipe.day.service.CategoryService;
 import com.recipe.day.service.RecipeService;
@@ -14,6 +13,7 @@ import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+
 /**
  * Контроллер для управления рецептами в системе "Случайный рецепт дня".
  * <p>
@@ -30,7 +30,7 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/recipes")
 public class RecipeController {
-    
+
     /**
      * Сервис для работы с рецептами.
      * <p>
@@ -41,7 +41,7 @@ public class RecipeController {
      */
     @Autowired
     private RecipeService recipeService;
-    
+
     /**
      * Сервис для работы с категориями.
      * <p>
@@ -51,7 +51,7 @@ public class RecipeController {
      */
     @Autowired
     private CategoryService categoryService;
-    
+
     /**
      * Отображает список рецептов с поддержкой поиска и фильтрации.
      * <p>
@@ -59,9 +59,10 @@ public class RecipeController {
      * необязательных параметра запроса:
      * </p>
      * <ul>
-     *   <li>{@code search} - поиск рецептов по названию (частичное совпадение)</li>
-     *   <li>{@code categoryId} - фильтрация рецептов по идентификатору категории</li>
-     *   <li>{@code maxTime} - фильтрация рецептов по максимальному времени приготовления</li>
+     * <li>{@code search} - поиск рецептов по названию (частичное совпадение)</li>
+     * <li>{@code categoryId} - фильтрация рецептов по идентификатору категории</li>
+     * <li>{@code maxTime} - фильтрация рецептов по максимальному времени
+     * приготовления</li>
      * </ul>
      * <p>
      * Если ни один параметр не указан, отображаются все рецепты.
@@ -77,7 +78,7 @@ public class RecipeController {
         model.addAttribute("categories", categoryService.getAllCategories());
         return "recipes/list";
     }
-    
+
     /**
      * Отображает форму для создания нового рецепта.
      * <p>
@@ -85,10 +86,10 @@ public class RecipeController {
      * объект {@link Recipe} с предустановленными значениями по умолчанию:
      * </p>
      * <ul>
-     *   <li>Время приготовления: 30 минут</li>
-     *   <li>Сложность: 3 (средняя)</li>
-     *   <li>Количество порций: 4</li>
-     *   <li>Рейтинг: 4.0</li>
+     * <li>Время приготовления: 30 минут</li>
+     * <li>Сложность: 3 (средняя)</li>
+     * <li>Количество порций: 4</li>
+     * <li>Рейтинг: 4.0</li>
      * </ul>
      *
      * @param model объект для передачи данных в представление
@@ -101,12 +102,12 @@ public class RecipeController {
         recipe.setDifficulty(3);
         recipe.setServings(4);
         recipe.setRating(new BigDecimal("4.0"));
-        
+
         model.addAttribute("recipe", recipe);
         model.addAttribute("categories", categoryService.getAllCategories());
         return "recipes/form";
     }
-    
+
     /**
      * Отображает форму для редактирования существующего рецепта.
      * <p>
@@ -116,10 +117,11 @@ public class RecipeController {
      * на список рецептов с сообщением об ошибке.
      * </p>
      *
-     * @param id идентификатор редактируемого рецепта
-     * @param model объект для передачи данных в представление
+     * @param id                 идентификатор редактируемого рецепта
+     * @param model              объект для передачи данных в представление
      * @param redirectAttributes атрибуты для передачи данных при перенаправлении
-     * @return имя Thymeleaf шаблона "recipes/form" или перенаправление на "/recipes"
+     * @return имя Thymeleaf шаблона "recipes/form" или перенаправление на
+     *         "/recipes"
      */
     @GetMapping("/edit/{id}")
     public String editRecipeForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
@@ -133,37 +135,39 @@ public class RecipeController {
             return "redirect:/recipes";
         }
     }
-    
+
     /**
      * Обрабатывает сохранение рецепта (создание или обновление).
      * <p>
      * Обрабатывает POST-запрос к {@code /recipes/save}. Выполняет следующие шаги:
      * </p>
      * <ol>
-     *   <li>Валидация данных с использованием аннотаций Bean Validation</li>
-     *   <li>Дополнительная проверка рейтинга (должен быть от 0.0 до 5.0)</li>
-     *   <li>Сохранение рецепта в базе данных</li>
-     *   <li>Перенаправление с сообщением об успехе</li>
+     * <li>Валидация данных с использованием аннотаций Bean Validation</li>
+     * <li>Дополнительная проверка рейтинга (должен быть от 0.0 до 5.0)</li>
+     * <li>Сохранение рецепта в базе данных</li>
+     * <li>Перенаправление с сообщением об успехе</li>
      * </ol>
      *
-     * @param recipe объект рецепта, заполненный из формы
-     * @param result объект для хранения ошибок валидации
-     * @param model объект для передачи данных в представление
+     * @param recipe             объект рецепта, заполненный из формы
+     * @param result             объект для хранения ошибок валидации
+     * @param model              объект для передачи данных в представление
      * @param redirectAttributes атрибуты для передачи данных при перенаправлении
-     * @return имя Thymeleaf шаблона "recipes/form" при ошибках или перенаправление на "/recipes"
+     * @return имя Thymeleaf шаблона "recipes/form" при ошибках или перенаправление
+     *         на "/recipes"
      */
     @PostMapping("/save")
     public String saveRecipe(@Valid @ModelAttribute Recipe recipe,
-                            BindingResult result,
-                            Model model,
-                            RedirectAttributes redirectAttributes) {
-        
+            BindingResult result,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
         if (result.hasErrors()) {
             model.addAttribute("categories", categoryService.getAllCategories());
             return "recipes/form";
         }
-        
-        /** Проверка рейтинга
+
+        /**
+         * Проверка рейтинга
          */
         if (recipe.getRating() != null) {
             if (recipe.getRating().compareTo(new BigDecimal("0.0")) < 0 ||
@@ -173,12 +177,12 @@ public class RecipeController {
                 return "recipes/form";
             }
         }
-        
+
         recipeService.saveRecipe(recipe);
         redirectAttributes.addFlashAttribute("success", "Рецепт успешно сохранен");
         return "redirect:/recipes";
     }
-    
+
     /**
      * Удаляет рецепт по идентификатору.
      * <p>
@@ -187,7 +191,7 @@ public class RecipeController {
      * Если рецепт не найден, возвращается сообщение об ошибке.
      * </p>
      *
-     * @param id идентификатор удаляемого рецепта
+     * @param id                 идентификатор удаляемого рецепта
      * @param redirectAttributes атрибуты для передачи данных при перенаправлении
      * @return перенаправление на "/recipes" с сообщением об успехе или ошибке
      */
@@ -202,7 +206,7 @@ public class RecipeController {
         }
         return "redirect:/recipes";
     }
-    
+
     /**
      * Отображает детальную информацию о рецепте.
      * <p>
@@ -211,10 +215,11 @@ public class RecipeController {
      * не найден, перенаправляет на список рецептов с сообщением об ошибке.
      * </p>
      *
-     * @param id идентификатор просматриваемого рецепта
-     * @param model объект для передачи данных в представление
+     * @param id                 идентификатор просматриваемого рецепта
+     * @param model              объект для передачи данных в представление
      * @param redirectAttributes атрибуты для передачи данных при перенаправлении
-     * @return имя Thymeleaf шаблона "recipes/view" или перенаправление на "/recipes"
+     * @return имя Thymeleaf шаблона "recipes/view" или перенаправление на
+     *         "/recipes"
      */
     @GetMapping("/view/{id}")
     public String viewRecipe(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
@@ -227,16 +232,17 @@ public class RecipeController {
             return "redirect:/recipes";
         }
     }
-    
+
     /**
      * Выполняет поиск рецептов по названию.
      * <p>
-     * Обрабатывает GET-запрос к {@code /recipes/search}. Выполняет регистронезависимый
+     * Обрабатывает GET-запрос к {@code /recipes/search}. Выполняет
+     * регистронезависимый
      * поиск рецептов, в названии которых содержится указанная подстрока.
      * </p>
      *
      * @param searchTerm поисковый запрос
-     * @param model объект для передачи данных в представление
+     * @param model      объект для передачи данных в представление
      * @return имя Thymeleaf шаблона "recipes/list"
      */
     @GetMapping("/search")
@@ -247,7 +253,7 @@ public class RecipeController {
         model.addAttribute("searchTerm", searchTerm);
         return "recipes/list";
     }
-    
+
     /**
      * Отображает быстрые рецепты (время приготовления <= 30 минут).
      * <p>
