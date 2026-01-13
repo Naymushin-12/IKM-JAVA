@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Рецепты</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-utensils me-2"></i>Случайный рецепт дня
+            </a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/">Главная</a>
+                <a class="nav-link active" href="/recipes">Рецепты</a>
+                <a class="nav-link" href="/categories">Категории</a>
+                <a class="nav-link" href="/favorites">Избранное</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-book me-2"></i>Рецепты</h2>
+        <a href="/recipes/create" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Добавить рецепт
+        </a>
+    </div>
+
+    <!-- Поиск и фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form th:action="@{/recipes/search}" method="get" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Поиск по названию рецепта...">
+                </div>
+                <div class="col-md-3">
+                    <select name="categoryId" class="form-control">
+                        <option value="">Все категории</option>
+                        <option th:each="cat : ${categories}" 
+                                th:value="${cat.id}" 
+                                th:text="${cat.title}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i>Найти
+                    </button>
+                </div>
+            </form>
+            <div class="mt-3">
+                <a href="/recipes/quick" class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-bolt me-1"></i>Быстрые рецепты (≤30 мин)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Сообщения -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Список рецептов -->
+    <div class="row">
+        <div th:each="recipe : ${recipes}" class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${recipe.title}">Название рецепта</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        <i th:if="${recipe.category.icon}" th:class="${recipe.category.icon} + ' me-1'"></i>
+                        <span th:text="${recipe.category.title}">Категория</span>
+                    </h6>
+                    <div class="mb-2">
+                        <small class="text-muted me-3">
+                            <i class="fas fa-clock"></i>
+                            <span th:text="${recipe.formattedPreparationTime}">30 мин</span>
+                        </small>
+                        <small class="text-muted me-3">
+                            <i class="fas fa-user-friends"></i>
+                            <span th:text="${recipe.servings}">4</span> порции
+                        </small>
+                        <small class="text-muted">
+                            <i class="fas fa-fire"></i>
+                            Сложность: <span th:text="${recipe.difficultyStars}">★★★☆☆</span>
+                        </small>
+                    </div>
+                    <p class="card-text" style="height: 60px; overflow: hidden;" 
+                       th:text="${recipe.description}">
+                        Краткое описание рецепта...
+                    </p>
+                    <div class="mt-3">
+                        <a th:href="@{/recipes/view/{id}(id=${recipe.id})}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i>Подробнее
+                        </a>
+                        <a th:href="@{/favorites/create/{id}(id=${recipe.id})}" 
+                           class="btn btn-sm btn-outline-success ms-1">
+                            <i class="fas fa-heart me-1"></i>В избранное
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <a th:href="@{/recipes/edit/{id}(id=${recipe.id})}" 
+                           class="text-secondary me-2">
+                            <i class="fas fa-edit me-1"></i>Редактировать
+                        </a>
+                        <a th:href="@{/recipes/delete/{id}(id=${recipe.id})}" 
+                           class="text-danger"
+                           onclick="return confirm('Удалить рецепт?')">
+                            <i class="fas fa-trash me-1"></i>Удалить
+                        </a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(recipes)}" class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        Рецепты не найдены. Добавьте первый рецепт!
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
