@@ -2,461 +2,75 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${recipe.title}">Рецепт</title>
+    <title>Рецепт</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .recipe-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-        }
-        .badge-lg {
-            font-size: 1rem;
-            padding: 0.5rem 1rem;
-        }
-        .ingredients-list {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        .ingredients-list li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #dee2e6;
-        }
-        .ingredients-list li:last-child {
-            border-bottom: none;
-        }
-        .instructions-step {
-            counter-increment: step-counter;
-            margin-bottom: 1.5rem;
-            padding-left: 3rem;
-            position: relative;
-        }
-        .instructions-step:before {
-            content: counter(step-counter);
-            background-color: #0d6efd;
-            color: white;
-            font-weight: bold;
-            border-radius: 50%;
-            width: 2rem;
-            height: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            left: 0;
-            top: 0;
-        }
-        .nutrition-card {
-            border-left: 4px solid #20c997;
-        }
-        .action-buttons .btn {
-            min-width: 150px;
-        }
-    </style>
 </head>
 <body>
 <div class="container mt-4">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-utensils me-2"></i>Случайный рецепт дня
-            </a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="/">Главная</a>
-                <a class="nav-link active" href="/recipes">Рецепты</a>
-                <a class="nav-link" href="/categories">Категории</a>
-                <a class="nav-link" href="/favorites">Избранное</a>
-            </div>
-        </div>
+    <nav class="navbar navbar-light bg-light mb-4">
+        <a class="navbar-brand" href="/">🍽️ Рецепт дня</a>
+        <a href="/recipes" class="btn btn-secondary">Назад к списку</a>
     </nav>
 
-    <!-- Шапка рецепта -->
-    <div class="recipe-header">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="display-5 fw-bold" th:text="${recipe.title}">Название рецепта</h1>
-                <p class="lead" th:text="${recipe.description} ?: 'Вкусный рецепт для всей семьи'">
-                    Краткое описание рецепта
+    <div class="card" th:if="${recipe}">
+        <div class="card-header bg-primary text-white">
+            <h3 th:text="${recipe.title}">Название рецепта</h3>
+        </div>
+        
+        <div class="card-body">
+            <p><strong>Описание:</strong> 
+                <span th:text="${recipe.description} ?: 'Нет описания'"></span>
+            </p>
+            
+            <p><strong>Категория:</strong> 
+                <span th:text="${recipe.category.title}">Категория</span>
+            </p>
+            
+            <p><strong>Время приготовления:</strong> 
+                <span th:text="${recipe.formattedPreparationTime}">30 мин</span>
+            </p>
+            
+            <p><strong>Сложность:</strong> 
+                <span th:text="${recipe.difficultyStars}">★★★☆☆</span>
+            </p>
+            
+            <p><strong>Порций:</strong> 
+                <span th:text="${recipe.servings}">4</span>
+            </p>
+            
+            <div th:if="${recipe.rating != null}">
+                <p><strong>Рейтинг:</strong> 
+                    <span th:text="${recipe.rating}">4.5</span>/5
                 </p>
-                
-                <div class="d-flex flex-wrap gap-3 mt-4">
-                    <span class="badge badge-lg bg-light text-dark">
-                        <i class="fas fa-clock me-1"></i>
-                        <span th:text="${recipe.formattedPreparationTime}">30 мин</span>
-                    </span>
-                    <span class="badge badge-lg bg-warning text-dark">
-                        <i class="fas fa-fire me-1"></i>
-                        Сложность: <span th:text="${recipe.difficultyStars}">★★★☆☆</span>
-                    </span>
-                    <span class="badge badge-lg bg-info text-dark">
-                        <i class="fas fa-user-friends me-1"></i>
-                        <span th:text="${recipe.servings}">4</span> порции
-                    </span>
-                    <span class="badge badge-lg bg-success text-dark" th:if="${recipe.rating != null}">
-                        <i class="fas fa-star me-1"></i>
-                        Рейтинг: <span th:text="${recipe.rating}">4.5</span>/5
-                    </span>
-                </div>
-            </div>
-            <div class="col-md-4 text-end">
-                <div class="card bg-light bg-opacity-25 border-0">
-                    <div class="card-body">
-                        <h6 class="card-title">
-                            <i class="fas fa-tags me-1"></i>Категория
-                        </h6>
-                        <p class="card-text">
-                            <i th:if="${recipe.category.icon}" th:class="${recipe.category.icon} + ' me-1'"></i>
-                            <span th:text="${recipe.category.title}">Категория</span>
-                        </p>
-                        <div class="small text-light">
-                            <i class="fas fa-calendar-plus me-1"></i>
-                            Добавлено: <span th:text="${recipe.formattedCreatedDate}">дата</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Кнопки действий -->
-    <div class="action-buttons mb-4">
-        <div class="d-flex justify-content-between">
-            <div>
-                <a href="/recipes" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>Все рецепты
-                </a>
-                <a th:href="@{/recipes/edit/{id}(id=${recipe.id})}" class="btn btn-warning ms-2">
-                    <i class="fas fa-edit me-1"></i>Редактировать
-                </a>
-            </div>
-            <div>
-                <a th:href="@{/favorites/create/{id}(id=${recipe.id})}" class="btn btn-success">
-                    <i class="fas fa-heart me-1"></i>Добавить в избранное
-                </a>
-                <a th:href="@{/recipes/delete/{id}(id=${recipe.id})}" 
-                   class="btn btn-danger ms-2"
-                   onclick="return confirm('Удалить рецепт? Все связанные записи в избранном также будут удалены.')">
-                    <i class="fas fa-trash me-1"></i>Удалить
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Левая колонка: Ингредиенты -->
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-shopping-basket me-2"></i>Ингредиенты
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <ul class="ingredients-list" th:if="${recipe.ingredients}">
-                        <li th:each="ingredient : ${#strings.arraySplit(recipe.ingredients, '\n')}">
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            <span th:text="${ingredient.trim()}">Ингредиент</span>
-                        </li>
-                    </ul>
-                    <div th:unless="${recipe.ingredients}" class="text-muted">
-                        Ингредиенты не указаны
-                    </div>
-                    
-                    <!-- Информация о питательности -->
-                    <div class="card nutrition-card mt-4">
-                        <div class="card-body">
-                            <h6 class="card-title">
-                                <i class="fas fa-apple-alt me-1"></i>Информация
-                            </h6>
-                            <div class="row text-center">
-                                <div class="col-4">
-                                    <div class="text-muted small">Порций</div>
-                                    <div class="h5" th:text="${recipe.servings}">4</div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="text-muted small">Время</div>
-                                    <div class="h5" th:text="${recipe.preparationTime}">30</div>
-                                    <div class="small text-muted">мин</div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="text-muted small">Сложность</div>
-                                    <div class="h5" th:text="${recipe.difficulty}">3</div>
-                                    <div class="small text-muted">из 5</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
             
-            <!-- Быстрые действия -->
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h6 class="card-title mb-0">
-                        <i class="fas fa-bolt me-2"></i>Быстрые действия
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-outline-primary" onclick="printRecipe()">
-                            <i class="fas fa-print me-1"></i>Распечатать рецепт
-                        </button>
-                        <button class="btn btn-outline-success" onclick="shareRecipe()">
-                            <i class="fas fa-share-alt me-1"></i>Поделиться
-                        </button>
-                        <button class="btn btn-outline-warning" onclick="addToShoppingList()">
-                            <i class="fas fa-list-alt me-1"></i>В список покупок
-                        </button>
-                    </div>
-                </div>
+            <hr>
+            
+            <h5>Ингредиенты:</h5>
+            <div class="bg-light p-3 rounded">
+                <pre style="white-space: pre-wrap;" th:text="${recipe.ingredients}"></pre>
+            </div>
+            
+            <h5 class="mt-4">Инструкции:</h5>
+            <div class="bg-light p-3 rounded">
+                <pre style="white-space: pre-wrap;" th:text="${recipe.instructions}"></pre>
             </div>
         </div>
         
-        <!-- Правая колонка: Инструкции -->
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-list-ol me-2"></i>Инструкции по приготовлению
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="instructions-container" th:if="${recipe.instructions}">
-                        <div class="instructions-step" 
-                             th:each="step, iter : ${#strings.arraySplit(recipe.instructions, '\n')}">
-                            <div th:text="${step.trim()}">
-                                Шаг приготовления
-                            </div>
-                        </div>
-                    </div>
-                    <div th:unless="${recipe.instructions}" class="text-muted">
-                        Инструкции не указаны
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Дополнительная информация -->
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-secondary text-white">
-                            <h6 class="card-title mb-0">
-                                <i class="fas fa-info-circle me-2"></i>Детали рецепта
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-sm">
-                                <tbody>
-                                    <tr>
-                                        <td><i class="fas fa-calendar-plus me-1"></i>Добавлен:</td>
-                                        <td th:text="${recipe.formattedCreatedDate}">дата</td>
-                                    </tr>
-                                    <tr th:if="${recipe.rating != null}">
-                                        <td><i class="fas fa-star me-1"></i>Рейтинг:</td>
-                                        <td>
-                                            <span th:text="${recipe.rating}">4.5</span>/5
-                                            <div class="progress mt-1" style="height: 5px;">
-                                                <div class="progress-bar bg-warning" 
-                                                     th:style="'width: ' + ${recipe.rating * 20} + '%'"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><i class="fas fa-heart me-1"></i>В избранном:</td>
-                                        <td>
-                                            <span th:text="${recipe.favorites.size()}">0</span> раз
-                                            <a th:href="@{/favorites?recipeId={id}(id=${recipe.id})}" 
-                                               class="btn btn-sm btn-outline-primary ms-2">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-warning text-dark">
-                            <h6 class="card-title mb-0">
-                                <i class="fas fa-lightbulb me-2"></i>Советы и заметки
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="alert alert-light">
-                                <i class="fas fa-tips me-1"></i>
-                                <strong>Совет:</strong> Для лучшего вкуса используйте свежие ингредиенты.
-                            </div>
-                            <div class="alert alert-light">
-                                <i class="fas fa-clock me-1"></i>
-                                <strong>Время:</strong> Можно приготовить заранее и разогреть перед подачей.
-                            </div>
-                            <div class="text-center mt-3">
-                                <a th:href="@{/}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-random me-1"></i>Случайный рецепт
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="card-footer">
+            <a th:href="@{/recipes/edit/{id}(id=${recipe.id})}" class="btn btn-warning">Редактировать</a>
+            <a th:href="@{/favorites/create/{id}(id=${recipe.id})}" class="btn btn-success">В избранное</a>
+            <a th:href="@{/recipes/delete/{id}(id=${recipe.id})}" 
+               class="btn btn-danger"
+               onclick="return confirm('Удалить этот рецепт?')">Удалить</a>
         </div>
     </div>
     
-    <!-- Комментарии и рейтинг (заготовка для будущего расширения) -->
-    <div class="card mt-4">
-        <div class="card-header">
-            <ul class="nav nav-tabs card-header-tabs" id="recipeTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="notes-tab" data-bs-toggle="tab" 
-                            data-bs-target="#notes" type="button" role="tab">
-                        <i class="fas fa-sticky-note me-1"></i>Мои заметки
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="variations-tab" data-bs-toggle="tab" 
-                            data-bs-target="#variations" type="button" role="tab">
-                        <i class="fas fa-exchange-alt me-1"></i>Вариации
-                    </button>
-                </li>
-            </ul>
-        </div>
-        <div class="card-body">
-            <div class="tab-content" id="recipeTabsContent">
-                <div class="tab-pane fade show active" id="notes" role="tabpanel">
-                    <textarea class="form-control" rows="3" placeholder="Добавьте свои заметки к рецепту..."></textarea>
-                    <div class="mt-2 text-end">
-                        <button class="btn btn-sm btn-primary">
-                            <i class="fas fa-save me-1"></i>Сохранить заметки
-                        </button>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="variations" role="tabpanel">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Здесь будут отображаться варианты приготовления этого рецепта.
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div th:unless="${recipe}" class="alert alert-danger">
+        <h4>Рецепт не найден</h4>
+        <p>Возможно, рецепт был удален или никогда не существовал.</p>
+        <a href="/recipes" class="btn btn-primary">Вернуться к списку рецептов</a>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // Функция для печати рецепта
-    function printRecipe() {
-        const printContent = `
-            <html>
-                <head>
-                    <title>${document.querySelector('.recipe-header h1').textContent}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; }
-                        .recipe-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
-                        .section { margin-bottom: 20px; }
-                        .section-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #000; }
-                        .ingredients li { margin-bottom: 5px; }
-                        .instructions { counter-reset: step; }
-                        .instructions li { margin-bottom: 10px; position: relative; padding-left: 30px; }
-                        .instructions li:before { 
-                            content: counter(step); 
-                            counter-increment: step; 
-                            position: absolute; 
-                            left: 0; 
-                            top: 0;
-                            background: #000;
-                            color: #fff;
-                            width: 20px;
-                            height: 20px;
-                            border-radius: 50%;
-                            text-align: center;
-                            line-height: 20px;
-                        }
-                        .meta { font-size: 12px; color: #666; margin-top: 30px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="recipe-title">${document.querySelector('.recipe-header h1').textContent}</div>
-                    <div class="meta">
-                        Время: ${document.querySelector('[th\\:text*="formattedPreparationTime"]').textContent} | 
-                        Порций: ${document.querySelector('[th\\:text*="servings"]').textContent} | 
-                        Сложность: ${document.querySelector('[th\\:text*="difficultyStars"]').textContent}
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Ингредиенты</div>
-                        <ul class="ingredients">
-                            ${Array.from(document.querySelectorAll('.ingredients-list li')).map(li => 
-                                `<li>${li.textContent.replace('check-circle', '').trim()}</li>`
-                            ).join('')}
-                        </ul>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Инструкции</div>
-                        <ol class="instructions">
-                            ${Array.from(document.querySelectorAll('.instructions-step')).map(step => 
-                                `<li>${step.textContent.trim()}</li>`
-                            ).join('')}
-                        </ol>
-                    </div>
-                    
-                    <div class="meta">
-                        Напечатано с сайта "Случайный рецепт дня" - ${new Date().toLocaleDateString()}
-                    </div>
-                </body>
-            </html>
-        `;
-        
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-        }, 250);
-    }
-    
-    // Функция для добавления в список покупок
-    function addToShoppingList() {
-        const ingredients = Array.from(document.querySelectorAll('.ingredients-list li span'))
-            .map(span => span.textContent.trim())
-            .join('\n');
-        
-        localStorage.setItem('shoppingList', 
-            (localStorage.getItem('shoppingList') || '') + '\n' + ingredients);
-        
-        alert('Ингредиенты добавлены в список покупок!');
-    }
-    
-    // Функция для поделиться
-    function shareRecipe() {
-        if (navigator.share) {
-            navigator.share({
-                title: document.querySelector('.recipe-header h1').textContent,
-                text: document.querySelector('.recipe-header .lead').textContent,
-                url: window.location.href
-            });
-        } else {
-            navigator.clipboard.writeText(window.location.href);
-            alert('Ссылка на рецепт скопирована в буфер обмена!');
-        }
-    }
-    
-    // Инициализация табов
-    const triggerTabList = document.querySelectorAll('#recipeTabs button')
-    triggerTabList.forEach(triggerEl => {
-        const tabTrigger = new bootstrap.Tab(triggerEl)
-        triggerEl.addEventListener('click', event => {
-            event.preventDefault()
-            tabTrigger.show()
-        })
-    })
-</script>
 </body>
 </html>
